@@ -1,0 +1,32 @@
+services:
+  fastapi:
+    container_name: gf-fastapi
+    build:
+      context: ./fastapi
+      dockerfile: Dockerfile.prod
+    ports:
+      - "7791:8080"
+    environment:
+      PYTHONPATH: /app #これ、apiか？と思ったけど、DockerfileのWORKDIRで/appに移動しているので、appになる
+      ENV: production
+
+  db:
+    container_name: gf-db
+    build:
+      context: ./mysql
+      dockerfile: Dockerfile.prod
+    ports:
+      - "7792:3306"
+    env_file:
+      - ./mysql/.env
+    volumes:
+      - gf_data:/var/lib/mysql
+
+  phpmyadmin:
+    container_name: gf-phpmyadmin
+    image: phpmyadmin:latest
+    ports:
+      - "7793:80"
+
+volumes:
+  gf_data:

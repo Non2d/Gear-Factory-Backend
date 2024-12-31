@@ -1,0 +1,36 @@
+services:
+  fastapi:
+    container_name: gf-fastapi
+    build:
+      context: ./fastapi
+      dockerfile: Dockerfile.dev
+    ports:
+      - "7791:8080"
+    depends_on:
+      - db
+    volumes:
+      - ./fastapi/app:/app
+
+  db: #ユーザ名：root, パスワード：なし
+    container_name: gf-db
+    build:
+      context: ./mysql
+      dockerfile: Dockerfile.dev
+    tty: true
+    ports:
+      - "7792:3306"
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_DATABASE: "gf"
+      TZ: "Asia/Tokyo"
+    volumes:
+      - gf_data:/var/lib/mysql
+
+  phpmyadmin:
+    container_name: gf-dbconsole
+    image: phpmyadmin:latest
+    ports:
+      - "7793:80"
+  
+volumes:
+  gf_data:
