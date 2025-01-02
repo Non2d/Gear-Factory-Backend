@@ -1,1 +1,1 @@
-A template for development.
+A server for API of Gear Factory.
