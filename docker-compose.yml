@@ -8,6 +8,8 @@ services:
       - "7791:8080"
     depends_on:
       - db
+    environment:
+      ENV: development
     volumes:
       - ./fastapi/app:/app
 

@@ -7,7 +7,7 @@ services:
     ports:
       - "7791:8080"
     environment:
-      PYTHONPATH: /app #これ、apiか？と思ったけど、DockerfileのWORKDIRで/appに移動しているので、appになる
+      PYTHONPATH: /app
       ENV: production
 
   db:
@@ -20,7 +20,7 @@ services:
     env_file:
       - ./mysql/.env
     volumes:
-      - gf_data:/var/lib/mysql
+      - gf_data_prod:/var/lib/mysql
 
   phpmyadmin:
     container_name: gf-phpmyadmin
@@ -29,4 +29,4 @@ services:
       - "7793:80"
 
 volumes:
-  gf_data:
+  gf_data_prod:

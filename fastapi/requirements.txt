@@ -1,4 +1,4 @@
-openai
+groq
 fastapi
 uvicorn
 pydantic
@@ -6,3 +6,4 @@ python-dotenv
 sqlalchemy
 aiomysql
 pymysql
+cryptography

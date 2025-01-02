@@ -3,7 +3,22 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
 from routers.api import Base
 
-DB_URL = "mysql+pymysql://root@db:3306/gf?charset=utf8"
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+# DB access credentials
+DB_USER = os.getenv("MYSQL_USER")
+DB_PASSWORD = os.getenv("MYSQL_PASSWORD")
+DB_NAME = os.getenv("MYSQL_DATABASE")
+DB_HOST = "db"
+
+if os.getenv("ENV") == "development":
+    DB_USER = "root"
+    DB_URL = f"mysql+pymysql://{DB_USER}@{DB_HOST}:3306/{DB_NAME}?charset=utf8"
+elif os.getenv("ENV") == "production":
+    DB_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:3306/{DB_NAME}?charset=utf8"
+
 engine = create_engine(DB_URL, echo=True)
 
 def wait_for_db_connection(max_retries=5, wait_interval=5):
