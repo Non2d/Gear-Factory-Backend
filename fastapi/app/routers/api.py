@@ -217,7 +217,7 @@ async def get_simple_results(db: AsyncSession = Depends(get_db)):
     results = await db.execute(stmt)
     # 結果をリスト形式に変換
     results_list = results.all()
-    return [
+    return {"results": [
         SimpleResultResponse(
             player_name=row[0],
             total_time=row[1],
@@ -225,7 +225,7 @@ async def get_simple_results(db: AsyncSession = Depends(get_db)):
             total_energy=row[3],
         )
         for row in results_list
-    ]
+    ]}
 
 # functions
 async def groq_analysis(prompt: str):
