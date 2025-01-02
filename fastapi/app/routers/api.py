@@ -210,7 +210,7 @@ class SimpleResultResponse(BaseModel):
 # ラップ用のデータモデル
 class ResultsWrapper(BaseModel):
     results: List[SimpleResultResponse]
-@router.get("/simple-results", response_model=List[SimpleResultResponse])
+@router.get("/simple-results", response_model=ResultsWrapper)
 async def get_simple_results(db: AsyncSession = Depends(get_db)):
     # SQLAlchemyクエリ
     stmt = select(Result.player_name, Result.total_time, Result.deaths, Result.total_energy).order_by(Result.total_time)
