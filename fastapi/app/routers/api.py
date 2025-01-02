@@ -210,14 +210,14 @@ class SimpleResultResponse(BaseModel):
 # ラップ用のデータモデル
 class ResultsWrapper(BaseModel):
     results: List[SimpleResultResponse]
-@router.get("/simple-results", response_model=ResultsWrapper)
+@router.get("/simple-results", response_model=List[SimpleResultResponse])
 async def get_simple_results(db: AsyncSession = Depends(get_db)):
     # SQLAlchemyクエリ
-    stmt = select(Result.player_name, Result.total_time, Result.deaths, Result.total_energy)
+    stmt = select(Result.player_name, Result.total_time, Result.deaths, Result.total_energy).order_by(Result.total_time)
     results = await db.execute(stmt)
     # 結果をリスト形式に変換
     results_list = results.all()
-    return {"results": [
+    return [
         SimpleResultResponse(
             player_name=row[0],
             total_time=row[1],
@@ -225,7 +225,7 @@ async def get_simple_results(db: AsyncSession = Depends(get_db)):
             total_energy=row[3],
         )
         for row in results_list
-    ]}
+    ]
 
 # functions
 async def groq_analysis(prompt: str):
