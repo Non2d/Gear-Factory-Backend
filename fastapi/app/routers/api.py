@@ -128,6 +128,36 @@ async def create_result(request_result: ResultCreate, db: AsyncSession = Depends
         )
         new_clear_times.append(new_clear_time)
 
+    # save to db
+    new_result = Result(
+        player_name=request_result.player_name,
+        total_time=request_result.total_time,
+        deaths=request_result.deaths,
+        total_energy=request_result.total_energy,
+        groq_analysis="groq_result",
+        stage_clear_times=new_clear_times,
+    )
+    db.add(new_result)
+    await db.commit()
+    await db.refresh(new_result)
+
+    # return response
+    result_with_relations = await db.execute(
+        select(Result)
+        .options(selectinload(Result.stage_clear_times))
+        .where(Result.id == new_result.id)
+    )
+    result_with_relations = result_with_relations.scalar_one()
+    return result_with_relations
+
+@router.post("/analyze", response_model=str)
+async def analyze_result(request_result: ResultCreate, db: AsyncSession = Depends(get_db)):
+    # basic validation
+    if len(request_result.stage_clear_times) != 6:
+        raise HTTPException(
+            status_code=500, detail="stage_clear_times must have 6 elements."
+        )
+
     # get median scores
     stmt = select(Result).options(selectinload(Result.stage_clear_times))
     queried_results = await db.execute(stmt)
@@ -159,7 +189,7 @@ async def create_result(request_result: ResultCreate, db: AsyncSession = Depends
     for stage_name, median_time in stage_medians.items():
         logger.info(f"Median Time for Stage '{stage_name}': {median_time}")
 
-    # analyse scores with groq
+    # analyze scores with groq
     stage_clear_times_str = ", ".join(
         [f"{st.stage_name}: {st.clear_time}s" for st in request_result.stage_clear_times]
     )
@@ -169,29 +199,7 @@ async def create_result(request_result: ResultCreate, db: AsyncSession = Depends
     groq_prompt_03 = "Stage 1 is a basic action stage. Stage 2, 3, and 4 are basic gamble stages. Stage 5 is a dynamic gamble stage. Stage 6 is the boss battle stage."
     groq_result = await groq_analysis(groq_prompt_01 + groq_prompt_02 + groq_prompt_03)
 
-    # save to db
-    new_result = Result(
-        player_name=request_result.player_name,
-        total_time=request_result.total_time,
-        deaths=request_result.deaths,
-        total_energy=request_result.total_energy,
-        groq_analysis=groq_result,
-        stage_clear_times=new_clear_times,
-    )
-    db.add(new_result)
-    await db.commit()
-    await db.refresh(new_result)
-
-    # return response
-    result_with_relations = await db.execute(
-        select(Result)
-        .options(selectinload(Result.stage_clear_times))
-        .where(Result.id == new_result.id)
-    )
-    result_with_relations = result_with_relations.scalar_one()
-    return result_with_relations
-
-
+    return groq_result
 
 @router.get("/results", response_model=List[ResultResponse])
 async def get_results(db: AsyncSession = Depends(get_db)):
