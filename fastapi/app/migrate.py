@@ -38,7 +38,7 @@ def wait_for_db_connection(max_retries=5, wait_interval=5):
 
 def reset_database():
     if wait_for_db_connection():
-        Base.metadata.drop_all(bind=engine)
+        # Base.metadata.drop_all(bind=engine)
         Base.metadata.create_all(bind=engine)
         print("Database reset successful.")
     else:
